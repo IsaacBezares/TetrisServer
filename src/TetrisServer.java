@@ -61,6 +61,7 @@ class ClientHandler implements Runnable {
         while (true) {
             try {
                 received = dataIS.readUTF();
+                System.out.println(received);
                 //Break the string into message and client part
                 StringTokenizer stringToken = new StringTokenizer(received, "/");
                 String messageToSend = stringToken.nextToken();
