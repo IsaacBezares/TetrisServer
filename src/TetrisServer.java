@@ -29,7 +29,6 @@ public class TetrisServer {
 
 class ClientHandler implements Runnable {
     ClientHandler opponent;
-    String partida;
     DataInputStream dataIS;
     DataOutputStream dataOS;
     Socket socket;
@@ -63,40 +62,41 @@ class ClientHandler implements Runnable {
                 received = dataIS.readUTF();
                 System.out.println("Cliente: " + socket.getRemoteSocketAddress().toString() + "// Mensaje: " + received);
                 //Break the string into message and client part
-                StringTokenizer stringToken = new StringTokenizer(received, "/");
-                String messageToSend = stringToken.nextToken();
 
-                if (messageToSend.equals("game over")) {
+                if (received.equals("game over")) {
                     System.out.println("entro game over");
                     if (!opponent.isPlaying) {
-                        System.out.println("Entro al verdadero game over");
-                        if (this.score > opponent.score) {
-                            this.dataOS.writeUTF("YOU WIN");
-                            opponent.dataOS.writeUTF("YOU LOSE");
+                        if (!opponent.socket.isClosed()) {
+                            System.out.println("Entro al verdadero game over");
+                            if (this.score > opponent.score) {
+                                this.dataOS.writeUTF("YOU WIN");
+                                opponent.dataOS.writeUTF("YOU LOSE");
 
-                        } else {
-                            this.dataOS.writeUTF("YOU LOSE");
-                            opponent.dataOS.writeUTF("YOU WIN");
+                            } else {
+                                this.dataOS.writeUTF("YOU LOSE");
+                                opponent.dataOS.writeUTF("YOU WIN");
+                            }
                         }
-                        this.dataIS.close();
-                        this.dataOS.close();
-                        this.opponent.dataIS.close();
-                        this.opponent.dataOS.close();
-                        this.socket.close();
-                        opponent.socket.close();
+                        this.isPlaying = false;
                         break;
-
                     }
                     this.isPlaying = false;
                     System.out.println("isPlaying false");
                 } else {
                     this.score = Integer.parseInt(received);
-                    opponent.dataOS.writeUTF(messageToSend);
+                    opponent.dataOS.writeUTF(received);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
+        }
+        try {
+            this.dataIS.close();
+            this.dataOS.close();
+            this.socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
