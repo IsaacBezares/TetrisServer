@@ -88,8 +88,7 @@ class ClientHandler implements Runnable {
 
                         }
                         this.isPlaying = false;
-                        System.out.println("isPlayinf false");
-                        break;
+                        System.out.println("isPlaying false");
                     } else {
                         opponent.dataOS.writeUTF(messageToSend);
                     }
