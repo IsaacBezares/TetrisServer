@@ -62,14 +62,15 @@ class ClientHandler implements Runnable {
             if (!socket.isClosed()) {
                 try {
                     received = dataIS.readUTF();
-                    System.out.println("Cliente: " + socket.getRemoteSocketAddress().toString() + "// Mensaje" + received);
+                    System.out.println("Cliente: " + socket.getRemoteSocketAddress().toString() + "// Mensaje: " + received);
                     //Break the string into message and client part
                     StringTokenizer stringToken = new StringTokenizer(received, "/");
                     String messageToSend = stringToken.nextToken();
 
                     if (messageToSend.equals("game over")) {
-
+                        System.out.println("entro game over");
                         if (!opponent.isPlaying) {
+                            System.out.println("Entro al verdadero game over");
                             if (this.score > opponent.score) {
                                 this.dataOS.writeUTF("YOU WIN");
                                 opponent.dataOS.writeUTF("YOU LOSE");
@@ -87,6 +88,7 @@ class ClientHandler implements Runnable {
 
                         }
                         this.isPlaying = false;
+                        System.out.println("isPlayinf false");
                         break;
                     } else {
                         opponent.dataOS.writeUTF(messageToSend);
