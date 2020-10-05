@@ -64,10 +64,8 @@ class ClientHandler implements Runnable {
                 //Break the string into message and client part
 
                 if (received.equals("game over")) {
-                    System.out.println("entro game over");
                     if (!opponent.isPlaying) {
                         if (!opponent.socket.isClosed()) {
-                            System.out.println("Entro al verdadero game over");
                             if (this.score > opponent.score) {
                                 this.dataOS.writeUTF("YOU WIN");
                                 opponent.dataOS.writeUTF("YOU LOSE");
@@ -81,7 +79,6 @@ class ClientHandler implements Runnable {
                         break;
                     }
                     this.isPlaying = false;
-                    System.out.println("isPlaying false");
                 } else {
                     this.score = Integer.parseInt(received);
                     opponent.dataOS.writeUTF(received);
