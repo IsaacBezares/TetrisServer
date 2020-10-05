@@ -6,15 +6,6 @@ public class TetrisServer {
     static Vector<ClientHandler> clients = new Vector<>(2);
 
     public static void main(String[] args) throws IOException {
-        char[] valueData = new char[4];
-        String gameCode = new String();
-
-        for (int j = 0; j < valueData.length; j++) {
-            int codigoAscii = (int) Math.floor(Math.random() * (122 - 97) + 97);
-            valueData[j] = (char) codigoAscii;
-            gameCode = gameCode + valueData[j];
-        }
-        System.out.println("Codigo de acceso a partida " + gameCode);
         int port = 18341;
         ServerSocket serverSocket = new ServerSocket(port);
         Socket socket;
@@ -24,7 +15,7 @@ public class TetrisServer {
             DataInputStream dataIS = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOS = new DataOutputStream(socket.getOutputStream());
             System.out.println("Un cliente nuevo se ha unido" + socket.getRemoteSocketAddress().toString());
-            ClientHandler client = new ClientHandler(socket, gameCode, dataIS, dataOS);
+            ClientHandler client = new ClientHandler(socket, dataIS, dataOS);
             if (!clients.isEmpty()){
                     clients.get(0).opponent = client;
                     client.opponent = clients.get(0);
@@ -47,11 +38,10 @@ class ClientHandler implements Runnable {
     boolean isWaitingOponent;
 
     //constructor
-    public ClientHandler(Socket socket, String partida, DataInputStream dataIS, DataOutputStream dataOS) {
+    public ClientHandler(Socket socket, DataInputStream dataIS, DataOutputStream dataOS) {
         this.dataIS = dataIS;
         this.dataOS = dataOS;
         this.socket = socket;
-        this.partida = partida;
         this.isWaitingOponent = true;
     }
 
