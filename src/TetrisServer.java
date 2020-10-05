@@ -66,7 +66,9 @@ class ClientHandler implements Runnable {
                     //Break the string into message and client part
                     StringTokenizer stringToken = new StringTokenizer(received, "/");
                     String messageToSend = stringToken.nextToken();
+                    System.out.println(messageToSend);
                     String client = stringToken.nextToken();
+                    System.out.println(client);
 
                     if (received.equals("game over")) {
                         for (ClientHandler toSearch : TetrisServer.clients) {
