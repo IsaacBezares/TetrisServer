@@ -20,15 +20,18 @@ public class TetrisServer {
         Socket socket;
         while (true) {
             socket = serverSocket.accept();
-            System.out.println("New client request received: ");
             //Obtain input and output streams
             DataInputStream dataIS = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOS = new DataOutputStream(socket.getOutputStream());
-            System.out.println("Creating a new handler for this client...");
             System.out.println("Un cliente nuevo se ha unido" + socket);
             ClientHandler client = new ClientHandler(socket, gameCode, dataIS, dataOS);
+            for (ClientHandler toSearch : TetrisServer.clients) {
+                if (toSearch.partida.equals(client.partida)) {
+                    toSearch.opponent = client;
+                    client.opponent = toSearch.opponent;
+                }
+            }
             Thread thread = new Thread(client);
-            System.out.println("Adding this client to active client list...");
             clients.add(client);
             thread.start();
         }
@@ -36,6 +39,7 @@ public class TetrisServer {
 }
 
 class ClientHandler implements Runnable {
+    ClientHandler opponent;
     String partida;
     DataInputStream dataIS;
     DataOutputStream dataOS;
@@ -56,6 +60,16 @@ class ClientHandler implements Runnable {
     @Override
     public void run() {
         String received;
+        if (this.opponent != null) {
+            try {
+                this.dataOS.writeUTF("ready");
+                this.opponent.dataOS.writeUTF("ready");
+                this.isPlaying = true;
+                this.opponent.isPlaying = true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         while (true) {
             if (!socket.isClosed()) {
                 try {
@@ -64,68 +78,42 @@ class ClientHandler implements Runnable {
                     //Break the string into message and client part
                     StringTokenizer stringToken = new StringTokenizer(received, "/");
                     String messageToSend = stringToken.nextToken();
-                    String client = stringToken.nextToken();
 
                     if (messageToSend.equals("game over")) {
-                        for (ClientHandler toSearch : TetrisServer.clients) {
-                            if (toSearch.partida.equals(this.partida) &&
-                                    !toSearch.socket.getRemoteSocketAddress().toString().equals(this.socket.getRemoteSocketAddress().toString())) { //partida.equals(client)
-                                if (!toSearch.isPlaying) {
-                                    if (this.score > toSearch.score) {
-                                        this.dataOS.writeUTF("YOU WIN");
-                                        toSearch.dataOS.writeUTF("YOU LOOSE");
-                                    } else {
-                                        this.dataOS.writeUTF("YOU LOOSE");
-                                        toSearch.dataOS.writeUTF("YOU WIN");
-                                    }
-                                    this.socket.close();
-                                    toSearch.socket.close();
-                                }
+
+                        if (!opponent.isPlaying) {
+                            if (this.score > opponent.score) {
+                                this.dataOS.writeUTF("YOU WIN");
+                                opponent.dataOS.writeUTF("YOU LOSE");
+
+                            } else {
+                                this.dataOS.writeUTF("YOU LOSE");
+                                opponent.dataOS.writeUTF("YOU WIN");
                             }
+                            this.dataIS.close();
+                            this.dataOS.close();
+                            this.opponent.dataIS.close();
+                            this.opponent.dataOS.close();
+                            this.socket.close();
+                            opponent.socket.close();
+
                         }
                         this.isPlaying = false;
                         break;
                     } else {
                         score = Integer.parseInt(messageToSend);
-                        //Busca al cliente en la lista de clientes conectados
-                        for (ClientHandler toSearch : TetrisServer.clients) {
-                            System.out.println("Cliente iterado: " + toSearch.partida + " IP: " + toSearch.socket.getRemoteSocketAddress().toString());
-                            //Lo encuentra por nombre
-                            if (toSearch.partida.equals(this.partida) &&
-                                    !toSearch.socket.getRemoteSocketAddress().toString().equals(this.socket.getRemoteSocketAddress().toString())) {
-                                //Si lo encuentra, la partida empieza, ambos empiezan a jugar, dejan de estar
-                                //esperando oponente y les manda una respuesta ready para que empiecen sus juegos
-                                System.out.println("Paso");
-                                if (toSearch.isWaitingOponent) {
-                                    System.out.println("Paso");
-                                    isWaitingOponent = false;
-                                    toSearch.isWaitingOponent = false;
-                                    isPlaying = true;
-                                    toSearch.isPlaying = true;
-                                    System.out.println("Paso");
-                                    this.dataOS.writeUTF("ready");
-                                    toSearch.dataOS.writeUTF("ready");
-                                    System.out.println("Paso");
-                                } else {
-                                    toSearch.dataOS.writeUTF(messageToSend);
-                                }
-                                //this.partida + " : " + messageToSend
-                                break;
-                            }
-                        }
-                        //En el caso de que sea el primero en conectar no hace nada
-                        //no deberia haber errores
+                        opponent.dataOS.writeUTF(messageToSend);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            try {
-                this.dataIS.close();
-                this.dataOS.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        }
+        try {
+            this.dataIS.close();
+            this.dataOS.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
