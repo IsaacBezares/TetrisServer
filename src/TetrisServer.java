@@ -16,9 +16,9 @@ public class TetrisServer {
             DataOutputStream dataOS = new DataOutputStream(socket.getOutputStream());
             System.out.println("Un cliente nuevo se ha unido" + socket.getRemoteSocketAddress().toString());
             ClientHandler client = new ClientHandler(socket, dataIS, dataOS);
-            if (!clients.isEmpty()){
-                    clients.get(0).opponent = client;
-                    client.opponent = clients.get(0);
+            if (!clients.isEmpty()) {
+                clients.get(0).opponent = client;
+                client.opponent = clients.get(0);
             }
             Thread thread = new Thread(client);
             clients.add(client);
@@ -59,51 +59,44 @@ class ClientHandler implements Runnable {
             }
         }
         while (true) {
-            if (!socket.isClosed()) {
-                try {
-                    received = dataIS.readUTF();
-                    System.out.println("Cliente: " + socket.getRemoteSocketAddress().toString() + "// Mensaje: " + received);
-                    //Break the string into message and client part
-                    StringTokenizer stringToken = new StringTokenizer(received, "/");
-                    String messageToSend = stringToken.nextToken();
+            try {
+                received = dataIS.readUTF();
+                System.out.println("Cliente: " + socket.getRemoteSocketAddress().toString() + "// Mensaje: " + received);
+                //Break the string into message and client part
+                StringTokenizer stringToken = new StringTokenizer(received, "/");
+                String messageToSend = stringToken.nextToken();
 
-                    if (messageToSend.equals("game over")) {
-                        System.out.println("entro game over");
-                        if (!opponent.isPlaying) {
-                            System.out.println("Entro al verdadero game over");
-                            if (this.score > opponent.score) {
-                                this.dataOS.writeUTF("YOU WIN");
-                                opponent.dataOS.writeUTF("YOU LOSE");
+                if (messageToSend.equals("game over")) {
+                    System.out.println("entro game over");
+                    if (!opponent.isPlaying) {
+                        System.out.println("Entro al verdadero game over");
+                        if (this.score > opponent.score) {
+                            this.dataOS.writeUTF("YOU WIN");
+                            opponent.dataOS.writeUTF("YOU LOSE");
 
-                            } else {
-                                this.dataOS.writeUTF("YOU LOSE");
-                                opponent.dataOS.writeUTF("YOU WIN");
-                            }
-                            this.dataIS.close();
-                            this.dataOS.close();
-                            this.opponent.dataIS.close();
-                            this.opponent.dataOS.close();
-                            this.socket.close();
-                            opponent.socket.close();
-
+                        } else {
+                            this.dataOS.writeUTF("YOU LOSE");
+                            opponent.dataOS.writeUTF("YOU WIN");
                         }
-                        this.isPlaying = false;
-                        System.out.println("isPlaying false");
-                    } else {
-                        opponent.dataOS.writeUTF(messageToSend);
+                        this.dataIS.close();
+                        this.dataOS.close();
+                        this.opponent.dataIS.close();
+                        this.opponent.dataOS.close();
+                        this.socket.close();
+                        opponent.socket.close();
+
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    this.isPlaying = false;
+                    System.out.println("isPlaying false");
+                } else {
+                    opponent.dataOS.writeUTF(messageToSend);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-        try {
-            this.dataIS.close();
-            this.dataOS.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
+}
 }
 
 
