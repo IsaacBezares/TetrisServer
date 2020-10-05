@@ -23,7 +23,7 @@ public class TetrisServer {
             //Obtain input and output streams
             DataInputStream dataIS = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOS = new DataOutputStream(socket.getOutputStream());
-            System.out.println("Un cliente nuevo se ha unido" + socket);
+            System.out.println("Un cliente nuevo se ha unido" + socket.getRemoteSocketAddress().toString());
             ClientHandler client = new ClientHandler(socket, gameCode, dataIS, dataOS);
             for (ClientHandler toSearch : TetrisServer.clients) {
                 if (toSearch.partida.equals(client.partida)) {
@@ -74,7 +74,7 @@ class ClientHandler implements Runnable {
             if (!socket.isClosed()) {
                 try {
                     received = dataIS.readUTF();
-                    System.out.println(received);
+                    System.out.println("Cliente: " + socket.getRemoteSocketAddress().toString() + "// Mensaje" + received);
                     //Break the string into message and client part
                     StringTokenizer stringToken = new StringTokenizer(received, "/");
                     String messageToSend = stringToken.nextToken();
