@@ -59,7 +59,7 @@ class ClientHandler implements Runnable {
     public void run() {
         String received;
         while (true) {
-            if (socket.isConnected()) {
+            if (!socket.isClosed()) {
                 try {
                     received = dataIS.readUTF();
                     System.out.println(received);
