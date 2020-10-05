@@ -4,7 +4,6 @@ import java.net.*;
 
 public class TetrisServer {
     static Vector<ClientHandler> clients = new Vector<>();
-    static int i = 0;
 
     public static void main(String[] args) throws IOException {
         char[] valueData = new char[4];
@@ -21,24 +20,23 @@ public class TetrisServer {
         Socket socket;
         while (true) {
             socket = serverSocket.accept();
-            System.out.println("New client request received: " + socket);
+            System.out.println("New client request received: ");
             //Obtain input and output streams
             DataInputStream dataIS = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOS = new DataOutputStream(socket.getOutputStream());
             System.out.println("Creating a new handler for this client...");
-            System.out.println("Cliente " + i + " Se ha unido");
-            ClientHandler client = new ClientHandler(socket, gameCode + " " + i, dataIS, dataOS);
+            System.out.println("Un cliente nuevo se ha unido" + socket);
+            ClientHandler client = new ClientHandler(socket, gameCode, dataIS, dataOS);
             Thread thread = new Thread(client);
             System.out.println("Adding this client to active client list...");
             clients.add(client);
             thread.start();
-            i++;
         }
     }
 }
 
 class ClientHandler implements Runnable {
-    String name;
+    String partida;
     DataInputStream dataIS;
     DataOutputStream dataOS;
     Socket socket;
@@ -47,11 +45,11 @@ class ClientHandler implements Runnable {
     boolean isWaitingOponent;
 
     //constructor
-    public ClientHandler(Socket socket, String name, DataInputStream dataIS, DataOutputStream dataOS) {
+    public ClientHandler(Socket socket, String partida, DataInputStream dataIS, DataOutputStream dataOS) {
         this.dataIS = dataIS;
         this.dataOS = dataOS;
         this.socket = socket;
-        this.name = name;
+        this.partida = partida;
         this.isWaitingOponent = true;
     }
 
@@ -66,13 +64,12 @@ class ClientHandler implements Runnable {
                     //Break the string into message and client part
                     StringTokenizer stringToken = new StringTokenizer(received, "/");
                     String messageToSend = stringToken.nextToken();
-                    System.out.println(messageToSend);
                     String client = stringToken.nextToken();
-                    System.out.println(client);
 
-                    if (received.equals("game over")) {
+                    if (messageToSend.equals("game over")) {
                         for (ClientHandler toSearch : TetrisServer.clients) {
-                            if (toSearch.name.equals(client)) {
+                            if (toSearch.partida.equals(this.partida) &&
+                                    !toSearch.socket.getRemoteSocketAddress().toString().equals(this.socket.getRemoteSocketAddress().toString())) { //partida.equals(client)
                                 if (!toSearch.isPlaying) {
                                     if (this.score > toSearch.score) {
                                         this.dataOS.writeUTF("YOU WIN");
@@ -92,8 +89,10 @@ class ClientHandler implements Runnable {
                         score = Integer.parseInt(messageToSend);
                         //Busca al cliente en la lista de clientes conectados
                         for (ClientHandler toSearch : TetrisServer.clients) {
+                            System.out.println("Cliente iterado: " + toSearch.partida + " IP: " + toSearch.socket.getRemoteSocketAddress().toString());
                             //Lo encuentra por nombre
-                            if (toSearch.name.equals(client)) {
+                            if (toSearch.partida.equals(this.partida) &&
+                                    !toSearch.socket.getRemoteSocketAddress().toString().equals(this.socket.getRemoteSocketAddress().toString())) {
                                 //Si lo encuentra, la partida empieza, ambos empiezan a jugar, dejan de estar
                                 //esperando oponente y les manda una respuesta ready para que empiecen sus juegos
                                 if (toSearch.isWaitingOponent) {
@@ -106,7 +105,7 @@ class ClientHandler implements Runnable {
                                 } else {
                                     toSearch.dataOS.writeUTF(messageToSend);
                                 }
-                                //this.name + " : " + messageToSend
+                                //this.partida + " : " + messageToSend
                                 break;
                             }
                         }
