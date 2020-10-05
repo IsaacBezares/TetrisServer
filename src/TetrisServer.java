@@ -101,8 +101,7 @@ class ClientHandler implements Runnable {
                         this.isPlaying = false;
                         break;
                     } else {
-                        score = Integer.parseInt(messageToSend);
-                        opponent.dataOS.writeUTF(messageToSend);
+                        dataOS.writeUTF(messageToSend);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
