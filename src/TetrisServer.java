@@ -87,19 +87,28 @@ class ClientHandler implements Runnable {
                     break;
                 } else {
                     score = Integer.parseInt(messageToSend);
-                    //search for the client in the connected devices list
+                    //Busca al cliente en la lista de clientes conectados
                     for (ClientHandler toSearch : TetrisServer.clients) {
+                        //Lo encuentra por nombre
                         if (toSearch.name.equals(client)) {
+                            //Si lo encuentra, la partida empieza, ambos empiezan a jugar, dejan de estar
+                            //esperando oponente y les manda una respuesta ready para que empiecen sus juegos
                             if (toSearch.isWaitingOponent) {
                                 isWaitingOponent = false;
                                 toSearch.isWaitingOponent = false;
                                 isPlaying = true;
                                 toSearch.isPlaying = true;
+                                this.dataOS.writeUTF("ready");
+                                toSearch.dataOS.writeUTF("ready");
+                            } else {
+                                toSearch.dataOS.writeUTF(messageToSend);
                             }
-                            toSearch.dataOS.writeUTF(messageToSend); //this.name + " : " + messageToSend
+                             //this.name + " : " + messageToSend
                             break;
                         }
                     }
+                    //En el caso de que sea el primero en conectar no hace nada
+                    //no deberia haber errores
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -112,7 +121,7 @@ class ClientHandler implements Runnable {
             e.printStackTrace();
         }
     }
-
 }
+
 
 
