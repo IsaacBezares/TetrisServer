@@ -95,13 +95,17 @@ class ClientHandler implements Runnable {
                                     !toSearch.socket.getRemoteSocketAddress().toString().equals(this.socket.getRemoteSocketAddress().toString())) {
                                 //Si lo encuentra, la partida empieza, ambos empiezan a jugar, dejan de estar
                                 //esperando oponente y les manda una respuesta ready para que empiecen sus juegos
+                                System.out.println("Paso");
                                 if (toSearch.isWaitingOponent) {
+                                    System.out.println("Paso");
                                     isWaitingOponent = false;
                                     toSearch.isWaitingOponent = false;
                                     isPlaying = true;
                                     toSearch.isPlaying = true;
+                                    System.out.println("Paso");
                                     this.dataOS.writeUTF("ready");
                                     toSearch.dataOS.writeUTF("ready");
+                                    System.out.println("Paso");
                                 } else {
                                     toSearch.dataOS.writeUTF(messageToSend);
                                 }
