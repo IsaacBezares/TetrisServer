@@ -3,7 +3,7 @@ import java.util.*;
 import java.net.*;
 
 public class TetrisServer {
-    static Vector<ClientHandler> clients = new Vector<>();
+    static Vector<ClientHandler> clients = new Vector<>(2);
 
     public static void main(String[] args) throws IOException {
         char[] valueData = new char[4];
@@ -25,11 +25,9 @@ public class TetrisServer {
             DataOutputStream dataOS = new DataOutputStream(socket.getOutputStream());
             System.out.println("Un cliente nuevo se ha unido" + socket.getRemoteSocketAddress().toString());
             ClientHandler client = new ClientHandler(socket, gameCode, dataIS, dataOS);
-            for (ClientHandler toSearch : TetrisServer.clients) {
-                if (toSearch.partida.equals(client.partida)) {
-                    toSearch.opponent = client;
-                    client.opponent = toSearch.opponent;
-                }
+            if (!clients.isEmpty()){
+                    clients.get(0).opponent = client;
+                    client.opponent = clients.get(0);
             }
             Thread thread = new Thread(client);
             clients.add(client);
