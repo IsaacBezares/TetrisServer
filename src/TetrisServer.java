@@ -99,7 +99,7 @@ class ClientHandler implements Runnable {
                         this.isPlaying = false;
                         break;
                     } else {
-                        dataOS.writeUTF(messageToSend);
+                        opponent.dataOS.writeUTF(messageToSend);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
