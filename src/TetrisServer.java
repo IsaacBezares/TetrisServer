@@ -84,11 +84,13 @@ class ClientHandler implements Runnable {
                         this.opponent.dataOS.close();
                         this.socket.close();
                         opponent.socket.close();
+                        break;
 
                     }
                     this.isPlaying = false;
                     System.out.println("isPlaying false");
                 } else {
+                    this.score = Integer.parseInt(received);
                     opponent.dataOS.writeUTF(messageToSend);
                 }
             } catch (IOException e) {
